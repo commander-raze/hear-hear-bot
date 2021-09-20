@@ -102,6 +102,24 @@ async def on_command_error(ctx, error):
         if isinstance(error, commands.BotMissingPermissions):
             await ctx.send(f"**The bot is missing required permissions. Please give the bot ADMINISTRATOR Permission to work flawlessly**")
 
+            
+    if lang == 'pt':
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send(f'*Não tens a(s) permissões básicas requerida(s)*')
+
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f'*O comando não tem o argumento necessário*')
+
+            
+        if isinstance(error, commands.MissingRole):
+            await ctx.send(f'*O comando não tem o Cargo necessário*')
+        
+        if isinstance(error, commands.MissingAnyRole):
+            await ctx.send(f'*O comando não tem o Cargo necessário*')
+            
+        if isinstance(error, commands.BotMissingPermissions):
+            await ctx.send(f"**O bot não têm as permissões necessárias. Por favor atribua ao bot a permissão ADMINISTRATOR para funcionar corretamente**")
+
 #autorole
 @client.event
 async def on_member_join(member):
@@ -148,6 +166,9 @@ async def unmute(ctx, Member: discord.Member):
 
     if lang == 'fr':
         await ctx.send(f"> {Member.mention} a été réactivé avec succès!")
+        
+    if lang == 'pt':
+        await ctx.send(f"> {Member.mention} deixou de estar silenciado!")
 
 @client.command()
 @commands.has_permissions(administrator = True)
@@ -157,6 +178,8 @@ async def setlang(ctx, l):
         l = 'fr'
     if l == 'EN':
         l = 'en'
+    if l == 'PT':
+        l = 'pt'
 
     guild = str(ctx.guild.id)
 
@@ -164,7 +187,7 @@ async def setlang(ctx, l):
     post = {'_id' : guild, 'ln' : l}
     find = collection.find({'_id': guild})
 
-    if l in ['en', 'fr']:
+    if l in ['en', 'fr', 'pt']:
 
         key = 69
 
@@ -181,6 +204,9 @@ async def setlang(ctx, l):
 
         if l == 'fr':
             await ctx.send(f'La langue par défaut pour ce serveur est réglée à : ***Français (FR)***')
+            
+        if l == 'pt':
+            await ctx.send(f'A linguagem padrão para este servidor foi alterada para ***Português (PT)***')
         
     else:
         await ctx.send('No such language in the database. *Contact the support server:* https://discord.gg/xBFPrYC')
@@ -223,6 +249,11 @@ async def autorole(ctx, *, r):
 
     if lang == 'fr':              
         await ctx.send(f"Rôle automatique défini à **{r}**. Pour le désactiver, saisissez `.autorole disable`")
+        
+        
+    
+    if lang == 'pt':              
+        await ctx.send(f"Cargo automático definido como **{r}**. Para o desativar, escreva `.autorole disable`")
 
 
 #time
@@ -372,11 +403,67 @@ async def timer(ctx, x, y='0s'):
                         if (l[ctx.message.channel.id] == 0):
                             break
 
+                            
+                            
+    if lang == 'pt':
+            await ctx.send(f'**Temporizador colocado para {str(int(time2/60))}m {str(time2%60)}s {ctx.message.author.mention}** *Se o temporizador se atrasar devido à latência do servidor, use `.r ` para definir um temporizador no plano de fundo para uma contagem de tempo mais precisa.* ')
+            msg = await ctx.send(f':clock1: **Temporizador: **  **` {str(int(time2/60)).zfill(2)} : {str(time2%60).zfill(2)} `**   {ctx.message.author.mention}  `.pause ` para pausar')
+
+                    
+            while time2 >= 0:
+
+                # Use replace text
+                await msg.edit(content = f':clock1: **Temporizador: **  **` {str(int(time2/60)).zfill(2)} : {str(time2%60).zfill(2)} `**   {ctx.message.author.mention}  `.pause ` para pausar')
+                
+                j = time2 % 5
+                if j != 0:
+                    time2 = time2 - j    
+                    time3 = time3 + j
+                    await asyncio.sleep(j-float(n)+1)
+                    await msg.edit(content = f':clock1: **Temporizador: **  **` {str(int(time2/60)).zfill(2)} : {str(time2%60).zfill(2)} `**   {ctx.message.author.mention}  `.pause ` para pausar')
+                
+                
+                await asyncio.sleep(4+float(n))
+                time2 = time2 - 5
+                time3 = time3 + 5
+
+
+
+                if time3 == 60:
+                    await ctx.send(f':green_circle: **1 minuto** **TERMINOU** {ctx.message.author.mention}')
+                            
+                if time2 == 60:
+                    await ctx.send(f':orange_circle: **1 minuto** **RESTANTE** {ctx.message.author.mention}')
+                        
+                if time2 <= 0:
+                    del l[ctx.message.channel.id]
+                    await ctx.send(f":red_circle: **ACABOU o tempo!** São dados 15 segundos adicionais {ctx.message.author.mention}")
+                    await msg.edit(content = f':clock1: **Temporizador: **  **` 00 : 00 `   {ctx.message.author.mention}**')
+                    await asyncio.sleep(15)
+                    await ctx.send(f"**O tempo adicional também ACABOU!** {ctx.message.author.mention}")
+                    
+
+                if (l[ctx.message.channel.id] == 1):
+                    await ctx.send(f'O(s) temporizador(es) **Pararam!**')
+                    del l[ctx.message.channel.id]
+                    print(l)
+                    break
+                if (l[ctx.message.channel.id] != 0):
+                    while True:
+                        await msg.edit(content = f':pause_button: **Em pausa:**  **` {str(int(time2/60)).zfill(2)} : {str(time2%60).zfill(2)} `**   {ctx.message.author.mention}  `.resume ` para continuar')
+                        await asyncio.sleep(float(n))
+                        await msg.edit(content = f':pause_button: **Em pausa:**  **` {str(int(time2/60)).zfill(2)}   {str(time2%60).zfill(2)} `**   {ctx.message.author.mention}  `.resume ` para continuar')
+                        await asyncio.sleep(float(n))
+                        if (l[ctx.message.channel.id] == 0):
+                            break
+                            
     else:
         if lang == 'en':
             await ctx.send(f'*Syntax error* \n*The command should contain the amount of Minute and the amount of Second in the following syntax* **Nm Ns**\n For example: ***7m 15s, 0m 30s***')
         if lang == 'fr':
-            await ctx.send(f'*Erreur de syntaxe*\n*La commande doit contenir le nombre de minutes et de secondes selon le format suivant* **NmNs**\nPar exemple : ***7m 15s, 0m 30s***')
+            await ctx.send(f'*Erreur de syntaxe* \n*La commande doit contenir le nombre de minutes et de secondes selon le format suivant* **NmNs**\n Par exemple : ***7m 15s, 0m 30s***')
+        if lang == 'pt':
+            await ctx.send(f'*Erro de sintaxe* \n*O comando deve conter o número de Minutos e o número de Segundos no seguinte formato* **NmNs**\n Por exemplo : ***7m 15s, 0m 30s***')
 
 
 @timer.error
@@ -400,9 +487,13 @@ async def timer_error(ctx, error):
 
     if lang == 'fr':
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(f"*Si vous voulez définir le chronomètre pour moins d'*une minute*, la commande devrait contenir le nombre de minutes et de secondes selon le format suivant* **NmNs**\nPar exemple : ***7m 15s, 0m 30s***")
+            await ctx.send(f"*Si vous voulez définir le chronomètre pour moins d'*une minute*, la commande devrait contenir le nombre de minutes et de secondes selon le format suivant* **NmNs**\n Par exemple : ***7m 15s, 0m 30s***")
 
+     if lang == 'pt':
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f"*Se quiser definir o temporizador para menos de *1 Minuto*, o comando deve conter o número de Minutos e o número de Segundos no seguinte formato* **NmNs**\n Por exemplo : ***7m 15s, 0m 30s***")
 
+            
 @client.command(aliases=['r', 'reminder', 'rappel'])
 async def remindme(ctx, x, y='0s'):
     lang = 'en'
@@ -522,14 +613,65 @@ async def remindme(ctx, x, y='0s'):
                         if (l[ctx.message.channel.id] == 0):
                             await ctx.send(f':arrow_forward: *LE RAPPEL A REPRIS :* **` {str(int(time2 / 60)).zfill(2)} : {str(time2 % 60).zfill(2)} `** {ctx.message.author.mention}')
                             break
+           
+        
+        
+        if lang == 'pt':
 
+            await ctx.send(f'**Lembrete definido para {str(int(time2/60))}m {str(time2%60)}s {ctx.message.author.mention}**\n*Use* `.t` *para colocar um temporizador no ecrã*')
+            t[ctx.message.channel.id] = str(f'{str(int(time2/60)).zfill(2)} : {str(time2%60).zfill(2)}   {ctx.message.author.mention}')
+
+                    
+            while time2 >= 0: 
+                # Use replace text
+                t[ctx.message.channel.id] = str(f'{str(int(time2/60)).zfill(2)} : {str(time2%60).zfill(2)}   {ctx.message.author.mention}')
+
+                await asyncio.sleep(float(n))
+                time2 = time2 - 1
+                time3 = time3 + 1
+
+
+
+                if time3 == 60:
+                    await ctx.send(f':green_circle: **1 minute** **TERMINOU** {ctx.message.author.mention}')
+                            
+                if time2 == 60:
+                    await ctx.send(f':orange_circle: **1 minute** **RESTANTE** {ctx.message.author.mention}')
+                        
+                if time2 == 0:
+                    t[ctx.message.channel.id] = '*<Null>*'
+                    await ctx.send(f":red_circle: **ACABOU o tempo!** São dados 15 segundos adicionais {ctx.message.author.mention}")
+                    await asyncio.sleep(15)
+                    await ctx.send(f"**O tempo adicional também ACABOU!** {ctx.message.author.mention}")
+                    del l[ctx.message.channel.id]
+                    
+
+                if (l[ctx.message.channel.id] == 1):
+                    await ctx.send(f'O(s) temporizador(es) **Pararam!**')
+                    t[ctx.message.channel.id] = '*<Null>*'
+                    del l[ctx.message.channel.id]
+                    print(l)
+                    break
+                if (l[ctx.message.channel.id] != 0):
+                    msg = await ctx.send(content = f':pause_button: *LEMBRETE EM PAUSA:*  **` {str(int(time2/60)).zfill(2)} : {str(time2%60).zfill(2)} `**   {ctx.message.author.mention}  `.resume ` para continuar')
+                        
+                    while True:
+                        await msg.edit(content = f':pause_button: *LEMBRETE EM PAUSA:*  **` {str(int(time2/60)).zfill(2)} : {str(time2%60).zfill(2)} `**   {ctx.message.author.mention}  `.resume ` para continuar')
+                        if (l[ctx.message.channel.id] == 0):
+                            await ctx.send(f':arrow_forward: *LEMBRETE EM PAUSA:*  **` {str(int(time2/60)).zfill(2)} : {str(time2%60).zfill(2)} `**   {ctx.message.author.mention}')
+                            break
+                            
     else:
 
         if lang == 'en':        
             await ctx.send(f'*Syntax error* \n*The command should contain the amount of Minutes and the amount of Seconds in the following syntax* **Nm Ns**\n For example: ***7m 15s, 0m 30s***')
 
         if lang == 'fr':
-            await ctx.send(f'*Erreur de syntaxe*\n*La commande doit contenir le nombre de minutes et de secondes selon le format suivant* **Nm Ns**\nPar exemple : ***7m 15s, 0m 30s***')
+            await ctx.send(f'*Erreur de syntaxe* \n*La commande doit contenir le nombre de minutes et de secondes selon le format suivant* **Nm Ns**\n Par exemple : ***7m 15s, 0m 30s***')
+
+        if lang == 'pt':
+            await ctx.send(f'*Erro de sintaxe* \n*O comando deve conter o número de Minutos e o número de Segundos no seguinte formato*  **Nm Ns**\n Por exemplo : ***7m 15s, 0m 30s***')
+
 
 
 @remindme.error
@@ -554,7 +696,11 @@ async def remindme_error(ctx, error):
 
     if lang == 'fr':
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(f"*Si vous voulez définir le chronomètre pour moins d'*une minute*, la commande devrait contenir le nombre de minutes et de secondes selon le format suivant* **NmNs**\nPar exemple : ***7m 15s, 0m 30s***")
+            await ctx.send(f"*Si vous voulez définir le chronomètre pour moins d'*une minute*, la commande devrait contenir le nombre de minutes et de secondes selon le format suivant* **Nm Ns**\n Par exemple : ***7m 15s, 0m 30s***")
+    
+    if lang == 'pt':
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f"*Se quiser definir o temporizador para menos de *1 Minuto*, o comando deve conter o número de Minutos e o número de Segundos no seguinte formato* **Nm Ns**\n Por exemplo : ***7m 15s, 0m 30s***")
 
 
 @client.command(aliases=['showtimer'])
@@ -576,7 +722,11 @@ async def showtimers(ctx):
         await ctx.send(f'*Timer running in this channel :* **{t.get(ctx.message.channel.id, "<null>")}**')
 
     if lang == 'fr':
-        await ctx.send(f'*Chronomètre en cours sur cette chaîne :* **{t.get(ctx.message.channel.id, "Aucun")}**')
+        await ctx.send(f'*Chronomètre en cours sur cette chaîne :* **{t.get(ctx.message.channel.id, "<null>")}**')
+        
+    if lang == 'pt':
+        await ctx.send(f'*Cronómetro em curso neste canal :* **{t.get(ctx.message.channel.id, "<null>")}**')
+
 
     print('IF SKIPPED!')
 
@@ -647,8 +797,23 @@ async def _8ball(ctx, *, question):
         await ctx.send(f'*Question par {ctx.message.author.mention} :* {question}\n    *Réponse :* {random.choice(responses)}')
 
 
+    if lang == 'pt':
+        responses = ['Claro!',
+                    'Sim, obviamente!',
+                    'Provavelmente',
+                    'Tem de acontecer',
+                    'Porque não?' 
+                    'Hear! Hear!',
+                    'Talvez?',
+                    "É melhor não descobrires",
+                    'Sem previsão',
+                    "Não contes com isso",
+                    'Muito duvidoso',
+                    'Não tão bom']
+        await ctx.send(f'*Pergunta de {ctx.message.author.mention} :* {question}\n    *Resposta :* {random.choice(responses)}')
+        
 #greetings
-@client.command(aliases=['hello', 'hi', 'hola', 'hey','Bonjour','Salut','Aloha','Hey'])
+@client.command(aliases=['hello', 'hi', 'hola', 'hey','Bonjour','Salut','Aloha','Hey','olá','oi','alo','alô'])
 async def greetings(ctx):
     lang = 'en'
 
@@ -669,6 +834,10 @@ async def greetings(ctx):
 
     if lang == 'fr':
         greetings = ['Bonjour','Salut','Aloha','Hey','Salut toi','Bonjour','Quoi de neuf ?']
+        await ctx.send(f'{random.choice(greetings)} {ctx.message.author.mention}')
+        
+    if lang == 'pt':
+        greetings = ['Olá','Tudo bem?','Como vai isso?','Méquié','Tudo fixe?']
         await ctx.send(f'{random.choice(greetings)} {ctx.message.author.mention}')
 
 
@@ -695,6 +864,10 @@ async def coinflip(ctx):
 
     if lang == 'fr':
         coin = ['Face', 'Pile']
+        await ctx.send(f'La pièce montre **{random.choice(coin)}!**')
+        
+    if lang == 'pt':
+        coin = ['Cara', 'Coroa']
         await ctx.send(f'La pièce montre **{random.choice(coin)}!**')
 
 
@@ -744,6 +917,17 @@ async def clear(ctx, amount=0,):
 
         await ctx.send(post)
 
+    if lang == 'pt':
+        if amount != 0:
+            amount = amount + 1
+        await ctx.channel.purge(limit=amount)
+        if amount == 0:
+            post = '*Nenhuma das mensagens foi apagada. Escreve um valor!*'
+        else:
+            post = f'Last **{amount - 1}** mensagem(ns) até agora foram apagadas por {ctx.message.author.mention}'
+
+        await ctx.send(post)
+
 
 #Team Shuffle
 @client.command(aliases=['toss'])
@@ -780,6 +964,17 @@ async def matchup(ctx, mod):
             b = ['Équipe 1' , 'Équipe 2' ]
             random.shuffle(b) #shuffle method
             await ctx.send("GOV: " + b[0] + "\nOPP: " + b[1])
+            
+     
+    if lang == 'pt':
+        if(mod=='BP' or mod=='bp' or mod=='PB' or mod=='pb'):
+            a = ['Equipa 1' , 'Equipa 2' , 'Equipa 3' , 'Equipa 4' ]
+            random.shuffle(a) #shuffle method
+            await ctx.send("GO: " + a[0] + "\nOO: " + a[1] + "\nGF: " + a[2] + "\nOF: " + a[3])
+        if(mod=='AP' or mod=='ap' or mod=='PA' or mod=='pa' or mod=='3v3'):
+            b = ['Equipa 1' , 'Equipa 2' ]
+            random.shuffle(b) #shuffle method
+            await ctx.send("GOV: " + b[0] + "\nOPP: " + b[1])
 
 
 
@@ -798,7 +993,7 @@ async def getmotion(ctx, lng='english'):
         pass
 
     if lang == 'en':
-        if(lng == 'english'):
+        if(lng == 'english' or lng == 'anglais' or lng == 'português'):
             with open("english.txt") as f:
                 lines = f.readlines()
                 await ctx.send(f'**Motion: **{random.choice(lines)}')
@@ -810,7 +1005,7 @@ async def getmotion(ctx, lng='english'):
                 await ctx.send(f'**Motion: **{random.choice(lines)}')
 
     if lang == 'fr':
-        if(lng == 'english' or lng == 'anglais'):
+        if(lng == 'english' or lng == 'anglais' or lng == 'português'):
             with open("english.txt") as f:
                 lines = f.readlines()
                 await ctx.send(f'**Motion: **{random.choice(lines)}')
@@ -821,6 +1016,17 @@ async def getmotion(ctx, lng='english'):
     
                 await ctx.send(f'**Motion: **{random.choice(lines)}')
 
+    if lang == 'pt':
+        if(lng == 'english' or lng == 'anglais' or lng == 'português'):
+            with open("english.txt") as f:
+                lines = f.readlines()
+                await ctx.send(f'**Moção: **{random.choice(lines)}')
+
+        elif(lng == 'bangla'):
+            with open("bangla.txt") as f:
+                lines = f.readlines()
+    
+                await ctx.send(f'**Motion: **{random.choice(lines)}')
 
 #Add Motion
 @client.command()
@@ -842,7 +1048,7 @@ async def addmotion(ctx, *, motion):
 
 
     if lang == 'en':
-        print('poo')
+        #print('poo')
         channel = client.get_channel(708094525993910343)
 
         try:
@@ -863,10 +1069,23 @@ async def addmotion(ctx, *, motion):
             post = {'_id': motion}
             collection.insert_one(post)
 
-            await channel.send(f'**Motion from {ctx.message.author.mention}, {server} : **{motion}')
+            await channel.send(f'**Motion de {ctx.message.author.mention}, {server} : **{motion}')
             await ctx.send(r'**Motion ajoutée pour révision !** *Joignez ici pour voir le flux :* https://discord.gg/VAcjYEN')
         except:
             ctx.send('La motion existe déjà dans la base de données!')
+            
+    if lang == 'pt':
+        channel = client.get_channel(708094525993910343)
+
+        try:
+            collection = db['addmotion']
+            post = {'_id': motion}
+            collection.insert_one(post)
+
+            await channel.send(f'**Moção de {ctx.message.author.mention}, {server} : **{motion}')
+            await ctx.send(r'**Moção adicionada para revisão!** *Entre aqui para ver o registo:* https://discord.gg/VAcjYEN')
+        except:
+            ctx.send('Esta moção já existe na base de dados!')
 
 #REACT-ROLE-MENU
 
@@ -1067,7 +1286,38 @@ async def addrolemenu(ctx):
         await menu.add_reaction("🇸")
         await ctx.send("Menu des rôles créé avec succès ! *Veuillez supprimer les autres messages de la chaîne pour la garder propre. Nous recommandons de désactiver la permission **Envoyer Message** pour @everyone*")
 
+    if lang == 'pt':
+        await ctx.channel.purge(limit=1)
+        menu = await ctx.send('Por favor leia as instruções com cuidado e atribua um Cargo a si próprio. \n\nSe for um **Adjudicador**, por favor reaja com :regional_indicator_a:\nSe for um **Debatedor**, por favor reaja com :regional_indicator_d: \nSe for um **Espetador**, por favor reaja com :regional_indicator_s: \n\nAs reações estão colocadas abaixo deste texto. Basta clicar para obter o seu Cargo.')
+        
+        collection = db['rolemenu']
+        guild = int(ctx.guild.id)
+        msg = int(menu.id)
 
+        post = {'_id': guild, 'msgID': msg}  
+
+        fax = collection.find({'_id': guild})
+        print(fax)
+        
+        ld = 1
+
+        for mix in fax:
+            ld = mix['_id']
+            print(f'Hey {ld}')
+
+        if ld == guild:
+            collection.delete_one({'_id': guild})
+            collection.insert_one(post)
+        else:
+            collection.insert_one(post)
+        
+        
+        await menu.add_reaction("🇦")
+        await menu.add_reaction("🇩")
+        await menu.add_reaction("🇸")
+        await ctx.send('Menu de Cargos criado com sucesso! *Por favor apague outras mensagens deste canal para o manter limpo. Pedimos que omita a permissão **Send Messages** deste canal para @everyone*')
+
+        
 
 #Role Menu Ends
 
@@ -1093,7 +1343,10 @@ async def addhearhear(ctx):
     if lang == 'fr':
         await ctx.send(f"Ajoutez Hear! Hear! à votre serveur à l'aide du lien ci-dessous. **N'oubliez pas de voter pour nous :**\n https://top.gg/bot/706179030977740810")
 
-
+    if lang == 'pt':
+        await ctx.send(f"Adicione Hear! Hear! ao seu servidor com o link em baixo. **Não se esqueça de VOTAR:**\n https://top.gg/bot/706179030977740810")
+        
+        
 #about
 @client.command()
 async def about(ctx):
@@ -1138,7 +1391,22 @@ async def about(ctx):
 
 
 
+if lang == 'pt':
+        await ctx.send('```Este é um bot de pordutividade dedicado aos debatedores. Este bot pode cronometrar os seus debates com um temporizador no ecrã e dar-lhe lembretes. Pode dar-lhe moções para praticar debater no Discord, ajudá-lo a criar equipas 3v3 e debates BP, ajudá-lo a decidir coisas, mandar uma moeda ao ar e muito mais. Use .commands para vê-los todos.\n'
+                        f'Este bot é creado por debatedores, para debatedores. Bons debates!\n\n'
 
+                        f'Desenvolvido por          : Tasdid Tahsin [tasdidtahsin#7276]\n'
+                        f'Avatar                    : Sharaf Ahmed [Sharaf#0596]\n'
+                        f'Tradução para Português   : Victor Babin [Victor Babin#6142], Étienne Beaulé [Étienne#7236], Thierry Jean, Nuzaba Tasannum [nuzaba.tasannum#2838]\n'
+                        f'Créditos                  : Najib Hayder [Najib#7917], Azmaeen Md Nibras [Nibras#4972]\n'
+                        f'Apoio da Comunidade       : Bangla Online Debate Platform\n\nSpecial thanks to the community for adding these wonderful motions.\n'
+                    
+                        f'</> Programado em Python3 utilizando Discord.py & biblioteca pymongo ```\n'
+                        f'Juntem-se ao servidor de suporte e votem no bot aqui: https://top.gg/bot/706179030977740810')
+
+        
+        
+        
 
 #commands
 @client.command(aliases = ['commands', 'HELP'])
@@ -1235,5 +1503,55 @@ async def help(ctx):
                         f"Veuillez insérez un point (.) avant les commandes```")
 
 
+    if lang == 'pt':
+        await ctx.send(f">   Todos os comandos do bot **Hear! Hear!:**\n\n"
+
+                        f" ** Debate **"
+
+                        f"```~ addmotion   : adiciona uma moção à base de dados\n"
+                        f"~ getmotion   : .getmotion english | .getmotion  bangla\n" 
+                        f"~ matchup     : .matchup AP | .toss BP ~ Criar equipas```\n"
+
+                        f" **  Contagem de tempo **"
+
+                        f"```~ timer       : .t | .timer ~ colocar um temporizador no ecrâ\n"
+                        f"~ remindme    : .r | .remindme ~ colocar um lembrete\n"
+                        f"~ showtimers  : mostrar o temporizador ativo no ecrâ\n"
+                        f"~ pause       : por o(s) temporizador(es) em pausa\n"
+                        f"~ resume      : continuar o(s) temporizador(es)\n"
+                        f"~ stop        : parar o(s) temporizador(es)\n"
+
+                        f" ** Utilidade **"
+                                               
+                        f"```~ setlang     : EN | FR | PT ~ .setlang en ~ .setlang fr ~ .setlang pt\n"
+                        f"~ coinflip    : .coinflip ~ CARA or COROA\n"
+                        f"~ ping        : ver a latência do bot\n"
+                        f'~ announce    : .announce "ANÚNCIO ENTRE ASPAS" ~ Anuncia uma mensagem ao canal de texto inteiro. Requer a permissão MANAGE MESSAGES \n\n'
+                        f"~ time        : mostra o tempo em unix```\n"
+                        
+                        f" ** Moderação **"
+
+                        f"```~ clear       : apagar um dado número de mensagens\n" 
+                        f"~ unmute      : .unmute @menção\n"
+                        f"~ undeafen    : .undeafen @menção```\n"
+                                                
+                        f" ** Gestão de Cargos **"  
+
+                        f"```~ autorole    : .autorole nomedecargo ~ requer a permissão ADMINISTRATOR\n"                        
+                        f"~ addrolemenu : Adiciona um menu de Obter Cargos ao canal ~ O Cargo do bot 'Hear! Hear!' Rdeve estar acima dos Cargos de 'Debater', 'Adjudicator' e 'Spectator'.``` \n"                        
+                        
+                        f" ** Diversão **"
+
+                        f"```~ greetings   : .hello | .hi | .olá\n"
+                        f"~ 8ball       : pergunta algo e vê a tua sina```\n"
+
+                        f" ** Tudo o resto **"
+                    
+                        f"```~ commands    : mostra este menu\n"
+                        f"~ addhearhear : obtém um link para adicionares o bot ao teu servidor\n"
+                        f"~ about       : aprende mais sobre este projeto e conhece a equipa```\n"
+                        
+                        
+                        f"> ***Por favor utilize um ponto  `.`  antes dos comandos***")
 
 client.run(token)
